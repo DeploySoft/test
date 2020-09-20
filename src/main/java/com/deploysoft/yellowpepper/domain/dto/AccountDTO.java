@@ -1,9 +1,10 @@
 package com.deploysoft.yellowpepper.domain.dto;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sun.istack.NotNull;
 import lombok.*;
 import lombok.experimental.SuperBuilder;
+
+import java.math.BigDecimal;
 
 /**
  * @author : J. Andres Boyaca (janbs)
@@ -15,11 +16,10 @@ import lombok.experimental.SuperBuilder;
 @EqualsAndHashCode(callSuper = true)
 public class AccountDto extends Response {
 
-    @NotNull
     @JsonProperty("account")
     private Long id;
 
     @JsonProperty("account_balance")
-    private Long amount;
+    private BigDecimal amount;
 
 }

@@ -2,6 +2,7 @@ package com.deploysoft.yellowpepper.domain.usecase;
 
 import com.deploysoft.yellowpepper.domain.dto.TransferRequestDto;
 import com.deploysoft.yellowpepper.domain.dto.TransferResponseDto;
+import com.deploysoft.yellowpepper.domain.exception.TransferException;
 import org.springframework.http.ResponseEntity;
 
 /**
@@ -9,5 +10,5 @@ import org.springframework.http.ResponseEntity;
  * @since : 19/09/20
  **/
 public interface ITransferDelegate {
-    ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto);
+    ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto) throws TransferException;
 }

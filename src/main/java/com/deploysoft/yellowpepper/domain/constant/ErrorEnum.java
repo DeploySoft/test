@@ -11,7 +11,10 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ErrorEnum {
     INSUFFICIENT_FUNDS("insufficient-funds"),
-    LIMIT_EXCEEDED("limit_exceeded");
+    LIMIT_EXCEEDED("limit_exceeded"),
+    INVALID_ACCOUNT_ORIGIN("invalid_account_origin"),
+    INVALID_ACCOUNT_DESTINATION("invalid_account_destination");
+
     private final String message;
 
 }

@@ -1,18 +1,18 @@
 package com.deploysoft.yellowpepper.domain.usecase.impl;
 
+import com.deploysoft.yellowpepper.domain.constant.TypeConfigEnum;
 import com.deploysoft.yellowpepper.domain.dto.AccountDto;
-import com.deploysoft.yellowpepper.domain.dto.Response;
 import com.deploysoft.yellowpepper.domain.usecase.IAccountDelegate;
 import com.deploysoft.yellowpepper.infrastructure.mapper.impl.IAccountMapper;
 import com.deploysoft.yellowpepper.persistence.model.Account;
+import com.deploysoft.yellowpepper.persistence.model.AccountConfig;
 import com.deploysoft.yellowpepper.persistence.repositories.IAccountRepository;
-import io.vavr.control.Option;
 import lombok.AllArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
-import java.util.Optional;
+import java.util.Collections;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -31,6 +31,7 @@ public class AccountDelegateIml implements IAccountDelegate {
     public ResponseEntity<AccountDto> createAccount() {
         Account account = new Account();
         account.setId(generateUniqueId());
+        account.setAccountConfig(getDefaultConfig(account));
         Account saved = iAccountRepository.save(account);
         return ResponseEntity.ok(iAccountMapper.modelToDTO(saved));
     }
@@ -49,4 +50,17 @@ public class AccountDelegateIml implements IAccountDelegate {
         } while (val < 0);
         return val;
     }
+
+    private List<AccountConfig> getDefaultConfig(Account account) {
+        AccountConfig.AccountConfigId accountConfigId = new AccountConfig.AccountConfigId();
+        accountConfigId.setAccount(account);
+        accountConfigId.setTypeConfigEnum(TypeConfigEnum.LIMIT_TRANSFER_PER_DAY);
+
+        AccountConfig limitTransactionConfig = new AccountConfig();
+        limitTransactionConfig.setValue("3");
+        limitTransactionConfig.setAccountConfigId(accountConfigId);
+
+        return Collections.singletonList(limitTransactionConfig);
+    }
+
 }

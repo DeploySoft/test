@@ -5,6 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
@@ -15,9 +16,15 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class TransferRequestDto {
+
+    @NotNull
     private BigDecimal amount;
+    @NotNull
     private CurrencyEnum currency;
-    private AccountDto originAccount;
-    private AccountDto destinationAccount;
+    @NotNull
+    private Long originAccount;
+    @NotNull
+    private Long destinationAccount;
     private String description;
 }
+
