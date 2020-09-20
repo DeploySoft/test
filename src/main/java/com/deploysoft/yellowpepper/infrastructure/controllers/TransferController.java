@@ -1,7 +1,7 @@
-package com.deploysoft.yellowpepper.controller;
+package com.deploysoft.yellowpepper.infrastructure.controllers;
 
-import com.deploysoft.yellowpepper.service.rate.IExchangeRates;
-import com.deploysoft.yellowpepper.service.rate.dto.RatesResponse;
+import com.deploysoft.yellowpepper.infrastructure.services.rate.IExchangeRates;
+import com.deploysoft.yellowpepper.infrastructure.services.rate.dto.RatesResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

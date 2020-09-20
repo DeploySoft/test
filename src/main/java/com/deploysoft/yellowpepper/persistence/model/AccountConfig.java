@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.domain.model;
+package com.deploysoft.yellowpepper.persistence.model;
 
 /**
  * @author : J. Andres Boyaca (janbs)

@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.mapper;
+package com.deploysoft.yellowpepper.infrastructure.mapper;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper;
+package com.deploysoft.yellowpepper.infrastructure.services;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

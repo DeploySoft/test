@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.dto;
+package com.deploysoft.yellowpepper.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

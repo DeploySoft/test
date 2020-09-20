@@ -1,6 +1,5 @@
-package com.deploysoft.yellowpepper.dto;
+package com.deploysoft.yellowpepper.domain.dto;
 
-import com.deploysoft.yellowpepper.domain.CurrencyEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

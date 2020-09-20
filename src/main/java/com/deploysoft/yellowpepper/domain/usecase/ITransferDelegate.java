@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.delegate;
+package com.deploysoft.yellowpepper.domain.usecase;
 
 /**
  * @author : J. Andres Boyaca (janbs)

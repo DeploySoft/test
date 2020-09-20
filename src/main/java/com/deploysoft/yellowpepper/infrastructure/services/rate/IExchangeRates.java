@@ -1,6 +1,6 @@
-package com.deploysoft.yellowpepper.service.rate;
+package com.deploysoft.yellowpepper.infrastructure.services.rate;
 
-import com.deploysoft.yellowpepper.service.rate.dto.RatesResponse;
+import com.deploysoft.yellowpepper.infrastructure.services.rate.dto.RatesResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;

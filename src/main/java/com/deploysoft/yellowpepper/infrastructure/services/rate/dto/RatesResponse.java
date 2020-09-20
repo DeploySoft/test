@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.service.rate.dto;
+package com.deploysoft.yellowpepper.infrastructure.services.rate.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
