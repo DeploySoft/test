@@ -1,5 +1,6 @@
 package com.deploysoft.yellowpepper.domain.dto;
 
+import com.deploysoft.yellowpepper.domain.constant.CurrencyEnum;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -13,10 +14,10 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class TransferDTO {
+public class TransferRequestDto {
     private BigDecimal amount;
     private CurrencyEnum currency;
-    private AccountDTO originAccount;
-    private AccountDTO destinationAccount;
+    private AccountDto originAccount;
+    private AccountDto destinationAccount;
     private String description;
 }

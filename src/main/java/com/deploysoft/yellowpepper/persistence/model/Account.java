@@ -18,4 +18,6 @@ public class Account implements Serializable {
     @Id
     private Long id;
 
+    private Long amount = 0L;
+
 }

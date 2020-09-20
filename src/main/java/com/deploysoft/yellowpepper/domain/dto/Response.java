@@ -1,15 +1,19 @@
 package com.deploysoft.yellowpepper.domain.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+import com.deploysoft.yellowpepper.domain.constant.StatusEnum;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 /**
  * @author : J. Andres Boyaca (janbs)
  * @since : 19/09/20
  **/
-@Builder
-@AllArgsConstructor
-public class Response {
-    private String status;
-    private String[] errors;
+@Data
+@SuperBuilder
+@NoArgsConstructor
+public abstract class Response {
+    @Builder.Default
+    private StatusEnum status = StatusEnum.OK;
+    @Builder.Default
+    private String[] errors = {};
 }

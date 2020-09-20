@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.domain.dto;
+package com.deploysoft.yellowpepper.domain.constant;
 
 /**
  * @author : J. Andres Boyaca (janbs)

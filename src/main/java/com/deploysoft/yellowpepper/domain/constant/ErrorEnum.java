@@ -1,4 +1,4 @@
-package com.deploysoft.yellowpepper.constant;
+package com.deploysoft.yellowpepper.domain.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Getter;
  **/
 @Getter
 @AllArgsConstructor
-public enum Error {
+public enum ErrorEnum {
     INSUFFICIENT_FUNDS("insufficient-funds"),
     LIMIT_EXCEEDED("limit_exceeded");
     private final String message;
