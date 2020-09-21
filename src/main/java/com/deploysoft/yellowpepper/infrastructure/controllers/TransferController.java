@@ -27,8 +27,7 @@ public class TransferController {
 
     @PostMapping("/transfer")
     public ResponseEntity getItem(@Valid @RequestBody TransferRequestDto transferRequestDto) throws TransferException {
-        iTransferDelegate.doTransfer(transferRequestDto);
-        return null;
+        return iTransferDelegate.doTransfer(transferRequestDto);
     }
 
     @GetMapping("/items/{itemId}")

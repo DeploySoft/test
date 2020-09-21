@@ -11,6 +11,7 @@ import com.deploysoft.yellowpepper.domain.usecase.IAccountDelegate;
 import com.deploysoft.yellowpepper.domain.usecase.ITransferDelegate;
 import com.deploysoft.yellowpepper.persistence.model.Account;
 import com.deploysoft.yellowpepper.persistence.model.AccountConfig;
+import com.deploysoft.yellowpepper.persistence.model.Transaction;
 import com.deploysoft.yellowpepper.persistence.repositories.ITransferRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,7 @@ public class TransferDelegateIml implements ITransferDelegate {
         this.limitTransferPredicate = accountConfig -> TypeConfigEnum.LIMIT_TRANSFER_PER_DAY.equals(accountConfig.getAccountConfigId().getTypeConfigEnum());
         this.checkConfig = (account, accountConfig) -> {
             long transactions = this.iTransferRepository.countDistinctByIdAccountIdAndIdDateAndTypeTransactionEnum(account.getId(), LocalDate.now(), TypeTransactionEnum.OUTCOME);
-            return transactions > Integer.parseInt(accountConfig.getValue());
+            return transactions >= Integer.parseInt(accountConfig.getValue());
         };
     }
 
@@ -57,17 +58,23 @@ public class TransferDelegateIml implements ITransferDelegate {
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_DESTINATION));
 
         checkAccountConfig(originAccount);
-        checkAmount(originAccount, checkTax(transferRequestDto.getAmount()));
+        checkAmount(originAccount, transferRequestDto.getAmount().add(checkTax(transferRequestDto.getAmount())));
 
-        doTransfer(originAccount, TypeTransactionEnum.OUTCOME, transferRequestDto.getAmount());
-        doTransfer(destinationAccount, TypeTransactionEnum.INCOME, transferRequestDto.getAmount());
+        doTransfer(originAccount, TypeTransactionEnum.OUTCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
+        doTransfer(destinationAccount, TypeTransactionEnum.INCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
 
-        return null;
+        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(checkTax(transferRequestDto.getAmount())).build());
     }
 
-    private void doTransfer(Account originAccount, TypeTransactionEnum outcome, BigDecimal amount) {
+    private void doTransfer(Account originAccount, TypeTransactionEnum outcome, BigDecimal amount, String description) {
         amount = TypeTransactionEnum.OUTCOME.equals(outcome) ? amount.negate() : amount.plus();
         iAccountDelegate.updateAmount(originAccount, amount);
+        Transaction transaction = new Transaction();
+        transaction.setAmount(amount);
+        transaction.setDescription(description);
+        transaction.setTypeTransactionEnum(outcome);
+        transaction.setId(Transaction.TransactionId.builder().account(originAccount).build());
+        iTransferRepository.save(transaction);
     }
 
     private void checkAccountConfig(Account originAccount) throws TransferException {
@@ -87,10 +94,10 @@ public class TransferDelegateIml implements ITransferDelegate {
     }
 
     private BigDecimal checkTax(BigDecimal amount) {
-        if (amount.compareTo(new BigDecimal(1000)) > 0) {
-            return amount.add(amount.divide(new BigDecimal(100)).multiply(taxConfig.getTaxGreaterThan1000()));
+        if (amount.compareTo(new BigDecimal(1000)) >= 0) {
+            return amount.divide(new BigDecimal(100)).multiply(taxConfig.getTaxGreaterThan1000());
         } else {
-            return amount.add(amount.divide(new BigDecimal(100)).multiply(taxConfig.getNormalTax()));
+            return amount.divide(new BigDecimal(100)).multiply(taxConfig.getNormalTax());
         }
     }
 
