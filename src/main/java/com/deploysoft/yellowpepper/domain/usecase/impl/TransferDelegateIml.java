@@ -51,7 +51,6 @@ public class TransferDelegateIml implements ITransferDelegate {
 
     @Override
     public ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto) throws TransferException {
-
         Account originAccount = iAccountDelegate.getAccount(transferRequestDto.getOriginAccount())
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_ORIGIN));
         Account destinationAccount = iAccountDelegate.getAccount(transferRequestDto.getDestinationAccount())
@@ -81,16 +80,13 @@ public class TransferDelegateIml implements ITransferDelegate {
         Optional<AccountConfig> config = originAccount.getAccountConfig().stream()
                 .filter(limitTransferPredicate)
                 .findFirst();
-        if (config.isPresent() &&
-                Boolean.TRUE.equals(this.checkConfig.apply(originAccount, config.get()))) {
+        if (config.isPresent() && Boolean.TRUE.equals(this.checkConfig.apply(originAccount, config.get())))
             throw new TransferException(ErrorEnum.LIMIT_EXCEEDED);
-        }
     }
 
     private void checkAmount(Account originAccount, BigDecimal amount) throws TransferException {
-        if (originAccount.getAmount().compareTo(amount) < 0) {
+        if (originAccount.getAmount().compareTo(amount) < 0)
             throw new TransferException(ErrorEnum.INSUFFICIENT_FUNDS);
-        }
     }
 
     private BigDecimal checkTax(BigDecimal amount) {
