@@ -68,12 +68,17 @@ public class TransferDelegateIml implements ITransferDelegate {
     private void doTransfer(Account originAccount, TypeTransactionEnum outcome, BigDecimal amount, String description) {
         amount = TypeTransactionEnum.OUTCOME.equals(outcome) ? amount.negate() : amount.plus();
         iAccountDelegate.updateAmount(originAccount, amount);
+        Transaction transaction = getTransaction(originAccount, outcome, amount, description);
+        iTransferRepository.save(transaction);
+    }
+
+    private Transaction getTransaction(Account originAccount, TypeTransactionEnum outcome, BigDecimal amount, String description) {
         Transaction transaction = new Transaction();
         transaction.setAmount(amount);
         transaction.setDescription(description);
         transaction.setTypeTransactionEnum(outcome);
         transaction.setId(Transaction.TransactionId.builder().account(originAccount).build());
-        iTransferRepository.save(transaction);
+        return transaction;
     }
 
     private void checkAccountConfig(Account originAccount) throws TransferException {
