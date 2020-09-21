@@ -23,7 +23,7 @@ import java.util.UUID;
  **/
 @Component
 @AllArgsConstructor
-public class AccountDelegateIml implements IAccountDelegate {
+public class AccountDelegateImpl implements IAccountDelegate {
 
     private final IAccountRepository iAccountRepository;
     private final IAccountMapper iAccountMapper;

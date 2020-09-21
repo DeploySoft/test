@@ -8,6 +8,7 @@ import com.deploysoft.yellowpepper.domain.dto.TransferRequestDto;
 import com.deploysoft.yellowpepper.domain.dto.TransferResponseDto;
 import com.deploysoft.yellowpepper.domain.exception.TransferException;
 import com.deploysoft.yellowpepper.domain.usecase.IAccountDelegate;
+import com.deploysoft.yellowpepper.domain.usecase.ITaxDelegate;
 import com.deploysoft.yellowpepper.domain.usecase.ITransferDelegate;
 import com.deploysoft.yellowpepper.persistence.model.Account;
 import com.deploysoft.yellowpepper.persistence.model.AccountConfig;
@@ -27,20 +28,20 @@ import java.util.function.Predicate;
  * @since : 20/09/20
  **/
 @Component
-public class TransferDelegateIml implements ITransferDelegate {
+public class TransferDelegateImpl implements ITransferDelegate {
 
     private final ITransferRepository iTransferRepository;
     private final IAccountDelegate iAccountDelegate;
-    private final TaxConfig taxConfig;
+    private final ITaxDelegate iTaxDelegate;
 
     private final Predicate<AccountConfig> limitTransferPredicate;
     private final BiFunction<Account, AccountConfig, Boolean> checkConfig;
 
-    public TransferDelegateIml(ITransferRepository iTransferRepository,
-                               IAccountDelegate iAccountDelegate,
-                               TaxConfig taxConfig) {
+    public TransferDelegateImpl(ITransferRepository iTransferRepository,
+                                IAccountDelegate iAccountDelegate,
+                                ITaxDelegate iTaxDelegate) {
         this.iTransferRepository = iTransferRepository;
-        this.taxConfig = taxConfig;
+        this.iTaxDelegate = iTaxDelegate;
         this.iAccountDelegate = iAccountDelegate;
         this.limitTransferPredicate = accountConfig -> TypeConfigEnum.LIMIT_TRANSFER_PER_DAY.equals(accountConfig.getAccountConfigId().getTypeConfigEnum());
         this.checkConfig = (account, accountConfig) -> {
@@ -53,16 +54,17 @@ public class TransferDelegateIml implements ITransferDelegate {
     public ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto) throws TransferException {
         Account originAccount = iAccountDelegate.getAccount(transferRequestDto.getOriginAccount())
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_ORIGIN));
+
         Account destinationAccount = iAccountDelegate.getAccount(transferRequestDto.getDestinationAccount())
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_DESTINATION));
 
         checkAccountConfig(originAccount);
-        checkAmount(originAccount, transferRequestDto.getAmount().add(checkTax(transferRequestDto.getAmount())));
+        checkAmount(originAccount, transferRequestDto.getAmount().add(iTaxDelegate.checkTax(transferRequestDto.getAmount())));
 
         doTransfer(originAccount, TypeTransactionEnum.OUTCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
         doTransfer(destinationAccount, TypeTransactionEnum.INCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
 
-        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(checkTax(transferRequestDto.getAmount())).build());
+        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(iTaxDelegate.checkTax(transferRequestDto.getAmount())).build());
     }
 
     private void doTransfer(Account originAccount, TypeTransactionEnum outcome, BigDecimal amount, String description) {
@@ -92,14 +94,6 @@ public class TransferDelegateIml implements ITransferDelegate {
     private void checkAmount(Account originAccount, BigDecimal amount) throws TransferException {
         if (originAccount.getAmount().compareTo(amount) < 0)
             throw new TransferException(ErrorEnum.INSUFFICIENT_FUNDS);
-    }
-
-    private BigDecimal checkTax(BigDecimal amount) {
-        if (amount.compareTo(new BigDecimal(1000)) >= 0) {
-            return amount.divide(new BigDecimal(100)).multiply(taxConfig.getTaxGreaterThan1000());
-        } else {
-            return amount.divide(new BigDecimal(100)).multiply(taxConfig.getNormalTax());
-        }
     }
 
 }
