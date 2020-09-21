@@ -11,8 +11,10 @@ import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 /**
@@ -25,7 +27,6 @@ public class AccountDelegateIml implements IAccountDelegate {
 
     private final IAccountRepository iAccountRepository;
     private final IAccountMapper iAccountMapper;
-
 
     @Override
     public ResponseEntity<AccountDto> createAccount() {
@@ -41,6 +42,17 @@ public class AccountDelegateIml implements IAccountDelegate {
         return iAccountRepository.findById(accountId)
                 .map(value -> ResponseEntity.ok(iAccountMapper.modelToDTO(value)))
                 .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    @Override
+    public Optional<Account> getAccount(Long accountId){
+        return iAccountRepository.findById(accountId);
+    }
+
+    @Override
+    public void updateAmount(Account account, BigDecimal amount) {
+        account.setAmount(account.getAmount().add(amount));
+        iAccountRepository.save(account);
     }
 
     private Long generateUniqueId() {
@@ -62,5 +74,4 @@ public class AccountDelegateIml implements IAccountDelegate {
 
         return Collections.singletonList(limitTransactionConfig);
     }
-
 }
