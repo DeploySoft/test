@@ -1,9 +1,9 @@
 package com.deploysoft.yellowpepper.persistence.model;
 
 import com.deploysoft.yellowpepper.domain.constant.TypeConfigEnum;
-import com.fasterxml.jackson.annotation.JsonBackReference;
-import lombok.Builder;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 import java.io.Serializable;
@@ -18,20 +18,21 @@ import java.io.Serializable;
 public class AccountConfig implements Serializable {
     @Id
     @EmbeddedId
-    private AccountConfigId accountConfigId;
+    private AccountConfigKey id;
 
     private String value;
 
     @Data
     @Embeddable
-    public static class AccountConfigId implements Serializable {
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class AccountConfigKey implements Serializable {
+
+        @Column(name = "account_id")
+        private Long accountId;
 
         @Enumerated(EnumType.STRING)
+        @Column(name = "type_config")
         private TypeConfigEnum typeConfigEnum;
-
-        @ManyToOne(fetch = FetchType.LAZY)
-        @JoinColumn(name = "account", nullable = false)
-        @JsonBackReference
-        private Account account;
     }
 }

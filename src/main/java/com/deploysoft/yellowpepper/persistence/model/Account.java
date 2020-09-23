@@ -22,7 +22,7 @@ public class Account implements Serializable {
     @Min(value = 0)
     private BigDecimal amount = new BigDecimal(0);
 
-    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
-    @JoinColumn(name = "account", referencedColumnName = "id")
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "account_id", referencedColumnName = "id")
     private List<AccountConfig> accountConfig;
 }

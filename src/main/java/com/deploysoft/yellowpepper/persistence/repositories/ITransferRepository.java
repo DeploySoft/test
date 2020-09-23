@@ -12,6 +12,6 @@ import java.time.LocalDate;
  * @since : 20/09/20
  **/
 @Repository
-public interface ITransferRepository extends JpaRepository<Transaction, Transaction.TransactionId> {
+public interface ITransferRepository extends JpaRepository<Transaction, Transaction.TransactionKey> {
     long countDistinctByIdAccountIdAndIdDateAndTypeTransactionEnum(Long account, LocalDate date, TypeTransactionEnum typeTransactionEnum);
 }

@@ -9,6 +9,6 @@ import org.springframework.stereotype.Repository;
  * @since : 20/09/20
  **/
 @Repository
-public interface IAccountConfigRepository extends JpaRepository<AccountConfig, AccountConfig.AccountConfigId> {
+public interface IAccountConfigRepository extends JpaRepository<AccountConfig, AccountConfig.AccountConfigKey> {
 
 }
