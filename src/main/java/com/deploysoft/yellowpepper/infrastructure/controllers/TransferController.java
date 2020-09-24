@@ -1,13 +1,14 @@
 package com.deploysoft.yellowpepper.infrastructure.controllers;
 
 import com.deploysoft.yellowpepper.domain.dto.TransferRequestDto;
+import com.deploysoft.yellowpepper.domain.dto.TransferResponseDto;
 import com.deploysoft.yellowpepper.domain.exception.TransferException;
 import com.deploysoft.yellowpepper.domain.usecase.ITransferDelegate;
-import com.deploysoft.yellowpepper.infrastructure.services.rate.IExchangeRates;
-import com.deploysoft.yellowpepper.infrastructure.services.rate.dto.RatesResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.validation.Valid;
 
@@ -19,23 +20,12 @@ import javax.validation.Valid;
 public class TransferController {
 
     @Autowired
-    private IExchangeRates iExchangeRates;
-
-    @Autowired
     private ITransferDelegate iTransferDelegate;
 
 
     @PostMapping("/transfer")
-    public ResponseEntity getItem(@Valid @RequestBody TransferRequestDto transferRequestDto) throws TransferException {
+    public ResponseEntity<TransferResponseDto> getItem(@Valid @RequestBody TransferRequestDto transferRequestDto) throws TransferException {
         return iTransferDelegate.doTransfer(transferRequestDto);
-    }
-
-    @GetMapping("/items/{itemId}")
-    public ResponseEntity getItemWithChildren(@PathVariable("itemId") String itemId) {
-        ResponseEntity<RatesResponse> item = iExchangeRates.getItem(itemId);
-        RatesResponse body = item.getBody();
-
-        return iExchangeRates.getItem(itemId);
     }
 
 

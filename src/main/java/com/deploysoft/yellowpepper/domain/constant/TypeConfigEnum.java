@@ -6,5 +6,5 @@ package com.deploysoft.yellowpepper.domain.constant;
  **/
 
 public enum TypeConfigEnum {
-    LIMIT_TRANSFER_PER_DAY, LIMIT_TRANSFER_AMOUNT;
+    LIMIT_TRANSFER_PER_DAY, CURRENCY_DEFAULT;
 }

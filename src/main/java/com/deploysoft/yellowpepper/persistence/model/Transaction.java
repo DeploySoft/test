@@ -31,12 +31,8 @@ public class Transaction implements Serializable {
 
     private String description;
 
-    @ManyToOne
-    @MapsId("account_id")
-    @JoinColumn(name = "account")
-    private Account account;
-
     @Data
+    @Builder
     @Embeddable
     @NoArgsConstructor
     @AllArgsConstructor
@@ -44,8 +40,10 @@ public class Transaction implements Serializable {
 
         private Long accountId;
 
+        @Builder.Default
         private LocalDate date = LocalDate.now();
 
+        @Builder.Default
         private LocalTime time =  LocalTime.now();
     }
 

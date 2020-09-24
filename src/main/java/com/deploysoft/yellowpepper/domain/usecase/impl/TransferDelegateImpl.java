@@ -1,5 +1,9 @@
 package com.deploysoft.yellowpepper.domain.usecase.impl;
 
+import com.deploysoft.yellowpepper.domain.command.Command;
+import com.deploysoft.yellowpepper.domain.command.impl.TransactionInCommand;
+import com.deploysoft.yellowpepper.domain.command.impl.TransactionOutCommand;
+import com.deploysoft.yellowpepper.domain.constant.CurrencyEnum;
 import com.deploysoft.yellowpepper.domain.constant.ErrorEnum;
 import com.deploysoft.yellowpepper.domain.constant.TypeConfigEnum;
 import com.deploysoft.yellowpepper.domain.constant.TypeTransactionEnum;
@@ -15,11 +19,13 @@ import com.deploysoft.yellowpepper.infrastructure.services.ITransferService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
+import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 import java.util.function.BiFunction;
-import java.util.function.Predicate;
 
 /**
  * @author : J. Andres Boyaca (janbs)
@@ -32,51 +38,93 @@ public class TransferDelegateImpl implements ITransferDelegate {
     private final IAccountService iAccountService;
     private final ITaxDelegate iTaxDelegate;
 
-    private final Predicate<AccountConfigDto> limitTransferPredicate;
-    private final BiFunction<AccountDto, AccountConfigDto, Boolean> checkConfig;
+    private final BiFunction<AccountDto, AccountConfigDto, Boolean> limitTransactions;
 
     public TransferDelegateImpl(ITransferService iTransferService, IAccountService iAccountService, ITaxDelegate iTaxDelegate) {
         this.iTransferService = iTransferService;
         this.iTaxDelegate = iTaxDelegate;
         this.iAccountService = iAccountService;
-
-        this.limitTransferPredicate = accountConfig -> TypeConfigEnum.LIMIT_TRANSFER_PER_DAY.equals(accountConfig.getAccountConfigId().getTypeConfigEnum());
-        this.checkConfig = (account, accountConfig) -> {
-            long transactions = this.iTransferService.countTransactionsPerDay(account.getId(),LocalDate.now(),TypeTransactionEnum.OUTCOME);
+        this.limitTransactions = (account, accountConfig) -> {
+            long transactions = this.iTransferService.countTransactionsPerDay(account.getId(), LocalDate.now(), TypeTransactionEnum.OUTCOME);
             return transactions >= Integer.parseInt(accountConfig.getValue());
         };
     }
 
     @Override
-    public ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto) throws TransferException {
-        AccountDto originAccount = iAccountService.findById(transferRequestDto.getOriginAccount())
+    @Transactional
+    public ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transfer) throws TransferException {
+
+        //Check accounts
+        AccountDto origin = iAccountService.findById(transfer.getOriginAccount())
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_ORIGIN));
 
-        AccountDto destinationAccount = iAccountService.findById(transferRequestDto.getDestinationAccount())
+        AccountDto destination = iAccountService.findById(transfer.getDestinationAccount())
                 .orElseThrow(() -> new TransferException(ErrorEnum.INVALID_ACCOUNT_DESTINATION));
 
-        checkAccountConfig(originAccount);
-        checkAmount(originAccount, transferRequestDto.getAmount().add(iTaxDelegate.checkTax(transferRequestDto.getAmount())));
+        //Check config with recursive method
+        checkConfigAccount(origin, TypeConfigEnum.LIMIT_TRANSFER_PER_DAY);
 
-        //new TransactionInCommand(iAccountRepository,iTransferRepository);
+        //Check initial tax
+        BigDecimal taxOriginalCurrency = iTaxDelegate.checkTax(origin.getAmount());
+        checkAmount(origin.getAmount(), taxOriginalCurrency);
 
-       // doTransfer(originAccount, TypeTransactionEnum.OUTCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
-        // doTransfer(destinationAccount, TypeTransactionEnum.INCOME, transferRequestDto.getAmount(), transferRequestDto.getDescription());
+        //Convert currency
+        this.iTaxDelegate.convertAmount(transfer.getCurrency(), getAccountCurrency(destination), transfer.getAmount())
+                .peek(transfer::setAmount)
+                .getOrElseThrow(TransferException::new);
 
-        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(iTaxDelegate.checkTax(transferRequestDto.getAmount())).build());
+        //Do transfer with Command Pattern
+        doTransfer(transfer, origin, destination);
+
+        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(taxOriginalCurrency).build());
     }
 
-    private void checkAccountConfig(AccountDto originAccount) throws TransferException {
-        Optional<AccountConfigDto> config = originAccount.getAccountConfig().stream()
-                .filter(limitTransferPredicate)
+    @Transactional
+    public synchronized void doTransfer(TransferRequestDto transfer, AccountDto origin, AccountDto destination) {
+        List<Command<TransferRequestDto>> transactions = Arrays.asList(
+                new TransactionOutCommand(this.iAccountService, this.iTransferService).setAccount(origin),
+                new TransactionInCommand(this.iAccountService, this.iTransferService).setAccount(destination)
+        );
+        transactions.forEach(transactionGeneral -> transactionGeneral.execute(transfer));
+    }
+
+    private void checkConfigAccount(AccountDto originAccount, TypeConfigEnum config) throws TransferException {
+        Optional<AccountConfigDto> validation = originAccount.getAccountConfig().stream()
+                .filter(accountConfig -> config.equals(accountConfig.getId().getTypeConfigEnum()))
                 .findFirst();
-        if (config.isPresent() && Boolean.TRUE.equals(this.checkConfig.apply(originAccount, config.get())))
-            throw new TransferException(ErrorEnum.LIMIT_EXCEEDED);
+        if (validation.isPresent()) {
+            switch (config) {
+                case LIMIT_TRANSFER_PER_DAY:
+                    validateLimitTransactions(originAccount, validation.get());
+                    break;
+                case CURRENCY_DEFAULT:
+                    //Your logic to more configs
+                    throw new IllegalStateException("Useless until you implemented your logic");
+                default:
+                    throw new IllegalStateException("Unexpected value: " + config);
+            }
+        }
     }
 
-    private void checkAmount(AccountDto originAccount, BigDecimal amount) throws TransferException {
-        if (originAccount.getAmount().compareTo(amount) < 0)
+    private void checkAmount(BigDecimal amountInAccount, BigDecimal amountTransaction) throws TransferException {
+        BigDecimal withTax = amountInAccount.add(amountTransaction);
+        if (amountInAccount.compareTo(withTax) < 0)
             throw new TransferException(ErrorEnum.INSUFFICIENT_FUNDS);
+    }
+
+    private void validateLimitTransactions(AccountDto account, AccountConfigDto validation) throws TransferException {
+        if (Boolean.TRUE.equals(this.limitTransactions.apply(account, validation))) {
+            throw new TransferException(ErrorEnum.LIMIT_EXCEEDED);
+        }
+    }
+
+    private CurrencyEnum getAccountCurrency(AccountDto receptor) {
+        return receptor.getAccountConfig().stream()
+                .filter(account -> TypeConfigEnum.CURRENCY_DEFAULT.equals(account.getId().getTypeConfigEnum()))
+                .findFirst()
+                .map(AccountConfigDto::getValue)
+                .map(CurrencyEnum::valueOf)
+                .orElse(CurrencyEnum.CAD);
     }
 
 }

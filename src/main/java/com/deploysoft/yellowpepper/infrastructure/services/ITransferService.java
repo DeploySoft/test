@@ -1,6 +1,7 @@
 package com.deploysoft.yellowpepper.infrastructure.services;
 
 import com.deploysoft.yellowpepper.domain.constant.TypeTransactionEnum;
+import com.deploysoft.yellowpepper.persistence.model.Transaction;
 
 import java.time.LocalDate;
 
@@ -11,4 +12,6 @@ import java.time.LocalDate;
 public interface ITransferService {
 
     long countTransactionsPerDay(Long accountId, LocalDate date, TypeTransactionEnum typeTransactionEnum);
+
+    void createTransaction(Transaction transaction);
 }

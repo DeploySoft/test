@@ -15,6 +15,6 @@ public interface IExchangeRates {
      * @return {@link RatesResponse}
      */
     @GetMapping(value = "/latest?base={base}", produces = APPLICATION_JSON_VALUE)
-    ResponseEntity<RatesResponse> getItem(@PathVariable(value = "base") String base);
+    RatesResponse getItem(@PathVariable(value = "base") String base);
 
 }

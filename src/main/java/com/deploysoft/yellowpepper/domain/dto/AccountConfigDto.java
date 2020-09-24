@@ -20,7 +20,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountConfigDto {
-    private AccountConfigKeyDto accountConfigId;
+    private AccountConfigKeyDto id;
     private String value;
 
     @Data
@@ -28,6 +28,6 @@ public class AccountConfigDto {
     @AllArgsConstructor
     public static class AccountConfigKeyDto {
         private TypeConfigEnum typeConfigEnum;
-        private Account account;
+        private Long accountId;
     }
 }

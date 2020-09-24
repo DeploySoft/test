@@ -1,5 +1,6 @@
 package com.deploysoft.yellowpepper.infrastructure.services.impl;
 
+import com.deploysoft.yellowpepper.domain.constant.CurrencyEnum;
 import com.deploysoft.yellowpepper.domain.constant.TypeConfigEnum;
 import com.deploysoft.yellowpepper.domain.dto.AccountDto;
 import com.deploysoft.yellowpepper.infrastructure.mapper.impl.IAccountMapper;
@@ -9,10 +10,8 @@ import com.deploysoft.yellowpepper.persistence.model.AccountConfig;
 import com.deploysoft.yellowpepper.persistence.repositories.IAccountRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
 
 /**
  * @author : J. Andres Boyaca (janbs)
@@ -44,6 +43,11 @@ public class AccountServiceImpl implements IAccountService {
         return iAccountMapper.modelToDTO(saved);
     }
 
+    @Override
+    public void updateAmount(Long accountId, BigDecimal amount) {
+        iAccountRepository.updateAmount(accountId, amount);
+    }
+
     private Long generateUniqueId() {
         long val;
         do {
@@ -56,6 +60,11 @@ public class AccountServiceImpl implements IAccountService {
         AccountConfig limitTransactionConfig = new AccountConfig();
         limitTransactionConfig.setValue("3");
         limitTransactionConfig.setId(new AccountConfig.AccountConfigKey(account.getId(), TypeConfigEnum.LIMIT_TRANSFER_PER_DAY));
-        return Collections.singletonList(limitTransactionConfig);
+
+        AccountConfig currencyDefault = new AccountConfig();
+        currencyDefault.setValue(CurrencyEnum.CAD.name());
+        currencyDefault.setId(new AccountConfig.AccountConfigKey(account.getId(), TypeConfigEnum.CURRENCY_DEFAULT));
+
+        return Arrays.asList(limitTransactionConfig,currencyDefault);
     }
 }

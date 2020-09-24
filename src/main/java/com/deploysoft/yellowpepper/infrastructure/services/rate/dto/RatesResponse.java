@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.Date;
 import java.util.LinkedHashMap;
 
@@ -14,7 +15,7 @@ import java.util.LinkedHashMap;
 @AllArgsConstructor
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class RatesResponse {
-    private LinkedHashMap<String,Double> rates;
+    private LinkedHashMap<String, BigDecimal> rates;
     private String base;
     @JsonFormat(pattern="yyyy-MM-dd")
     private Date date;

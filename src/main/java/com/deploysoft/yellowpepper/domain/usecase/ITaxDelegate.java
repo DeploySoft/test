@@ -1,5 +1,9 @@
 package com.deploysoft.yellowpepper.domain.usecase;
 
+import com.deploysoft.yellowpepper.domain.constant.CurrencyEnum;
+import com.deploysoft.yellowpepper.domain.constant.ErrorEnum;
+import io.vavr.control.Either;
+
 import java.math.BigDecimal;
 
 /**
@@ -8,4 +12,6 @@ import java.math.BigDecimal;
  **/
 public interface ITaxDelegate {
     BigDecimal checkTax(BigDecimal amount);
+
+    Either<ErrorEnum, BigDecimal> convertAmount(CurrencyEnum currencyIn, CurrencyEnum currencyOut, BigDecimal amount);
 }

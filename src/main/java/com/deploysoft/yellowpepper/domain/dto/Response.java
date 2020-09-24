@@ -11,7 +11,7 @@ import lombok.experimental.SuperBuilder;
 @Data
 @SuperBuilder
 @NoArgsConstructor
-public abstract class Response {
+public class Response {
     @Builder.Default
     private StatusEnum status = StatusEnum.OK;
     @Builder.Default
