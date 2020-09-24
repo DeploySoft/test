@@ -16,6 +16,7 @@ import com.deploysoft.yellowpepper.domain.usecase.ITaxDelegate;
 import com.deploysoft.yellowpepper.domain.usecase.ITransferDelegate;
 import com.deploysoft.yellowpepper.infrastructure.services.IAccountService;
 import com.deploysoft.yellowpepper.infrastructure.services.ITransferService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
@@ -24,8 +25,10 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 /**
  * @author : J. Andres Boyaca (janbs)
@@ -52,7 +55,7 @@ public class TransferDelegateImpl implements ITransferDelegate {
 
     @Override
     @Transactional
-    public ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transfer) throws TransferException {
+    public ResponseEntity doTransfer(TransferRequestDto transfer) throws TransferException {
 
         //Check accounts
         AccountDto origin = iAccountService.findById(transfer.getOriginAccount())
@@ -65,18 +68,27 @@ public class TransferDelegateImpl implements ITransferDelegate {
         checkConfigAccount(origin, TypeConfigEnum.LIMIT_TRANSFER_PER_DAY);
 
         //Check initial tax
-        BigDecimal taxOriginalCurrency = iTaxDelegate.checkTax(origin.getAmount());
-        checkAmount(origin.getAmount(), taxOriginalCurrency);
+        BigDecimal taxOriginalCurrency = iTaxDelegate.checkTax(transfer.getAmount()).get();
 
-        //Convert currency
-        this.iTaxDelegate.convertAmount(transfer.getCurrency(), getAccountCurrency(destination), transfer.getAmount())
+        //Convert currency and set in transfer
+        CurrencyEnum accountCurrency = getAccountCurrency(destination);
+        this.iTaxDelegate.convertAmount(transfer.getCurrency(), accountCurrency, transfer.getAmount())
                 .peek(transfer::setAmount)
+                .getOrElseThrow(TransferException::new);
+
+        //Check current currency tax
+        BigDecimal taxCurrentCurrency = iTaxDelegate.checkTax(transfer.getAmount()).peek(transfer::setTax).get();
+        checkAmount(origin.getAmount(), transfer.getAmount(), taxCurrentCurrency);
+
+        //Convert currency and set in tax
+        this.iTaxDelegate.convertAmount(transfer.getCurrency(), accountCurrency, transfer.getTax())
+                .peek(transfer::setTax)
                 .getOrElseThrow(TransferException::new);
 
         //Do transfer with Command Pattern
         doTransfer(transfer, origin, destination);
 
-        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(taxOriginalCurrency).build());
+        return ResponseEntity.ok(TransferResponseDto.builder().taxCollected(taxOriginalCurrency).build().setObjectMap(accountCurrency,taxCurrentCurrency));
     }
 
     @Transactional
@@ -106,8 +118,8 @@ public class TransferDelegateImpl implements ITransferDelegate {
         }
     }
 
-    private void checkAmount(BigDecimal amountInAccount, BigDecimal amountTransaction) throws TransferException {
-        BigDecimal withTax = amountInAccount.add(amountTransaction);
+    private void checkAmount(BigDecimal amountInAccount, BigDecimal transfer, BigDecimal tax) throws TransferException {
+        BigDecimal withTax = transfer.add(tax);
         if (amountInAccount.compareTo(withTax) < 0)
             throw new TransferException(ErrorEnum.INSUFFICIENT_FUNDS);
     }

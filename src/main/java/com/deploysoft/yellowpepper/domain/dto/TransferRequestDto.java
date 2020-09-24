@@ -19,6 +19,7 @@ public class TransferRequestDto {
 
     @NotNull
     private BigDecimal amount;
+    private BigDecimal tax;
     @NotNull
     private CurrencyEnum currency;
     @NotNull

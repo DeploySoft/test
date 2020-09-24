@@ -24,7 +24,7 @@ public class TransactionOutCommand extends TransactionGeneral implements Command
     @Override
     public void execute(TransferRequestDto input) {
         AccountDto account = super.getAccount();
-        iAccountService.updateAmount(account.getId(), account.getAmount().min(input.getAmount()));
+        iAccountService.updateAmount(account.getId(), account.getAmount().subtract(input.getAmount()).subtract(input.getTax()));
         super.createTransaction(TypeTransactionEnum.OUTCOME, input.getAmount(), input.getDescription());
     }
 

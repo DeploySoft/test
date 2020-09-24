@@ -11,7 +11,7 @@ import java.math.BigDecimal;
  * @since : 21/09/20
  **/
 public interface ITaxDelegate {
-    BigDecimal checkTax(BigDecimal amount);
+    Either<Void,BigDecimal> checkTax(BigDecimal amount);
 
     Either<ErrorEnum, BigDecimal> convertAmount(CurrencyEnum currencyIn, CurrencyEnum currencyOut, BigDecimal amount);
 }
