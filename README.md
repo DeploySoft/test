@@ -1,4 +1,3 @@
-# Test for YellowPepper
 * I've used clean architecture for the scaffolding using [hexagonal architecture](https://blog.octo.com/en/hexagonal-architecture-three-principles-and-an-implementation-example/)
 * I've used a few design patterns like command pattern, builder , singleton and well spring patterns.
 
