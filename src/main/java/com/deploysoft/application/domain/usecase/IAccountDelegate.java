@@ -9,8 +9,10 @@ import org.springframework.http.ResponseEntity;
  **/
 public interface IAccountDelegate {
 
+    //FIXME Remove coupling
     ResponseEntity<AccountDto> createAccount();
 
+    //FIXME Remove coupling
     ResponseEntity<AccountDto> checkAccount(Long accountId);
 
 }

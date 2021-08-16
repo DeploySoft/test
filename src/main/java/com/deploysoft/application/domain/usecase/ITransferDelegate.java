@@ -10,5 +10,7 @@ import org.springframework.http.ResponseEntity;
  * @since : 19/09/20
  **/
 public interface ITransferDelegate {
+
+    //FIXME Remove coupling
     ResponseEntity<TransferResponseDto> doTransfer(TransferRequestDto transferRequestDto) throws TransferException;
 }

@@ -18,4 +18,6 @@
 * `docker-compose  -f docker-compose.yml up -d`
 * enjoy :)
 
- 
+# FIX ME
+ * Remove coupling
+ * Scaffolding Clean Architecture
